@@ -1575,11 +1575,12 @@ public:
     AstNodeDType* subDTypep() const override VL_MT_STABLE {
         return m_refDTypep ? m_refDTypep : childDTypep();
     }
+    bool isAggregateType() const override { return true; }
     void refDTypep(AstNodeDType* nodep) { m_refDTypep = nodep; }
     AstNodeDType* virtRefDTypep() const override { return m_refDTypep; }
     void virtRefDTypep(AstNodeDType* nodep) override { refDTypep(nodep); }
     // METHODS
-    AstBasicDType* basicp() const override VL_MT_STABLE { return subDTypep()->basicp(); }
+    AstBasicDType* basicp() const override VL_MT_STABLE { return nullptr; }
     int widthAlignBytes() const override { return sizeof(std::map<std::string, std::string>); }
     int widthTotalBytes() const override { return sizeof(std::map<std::string, std::string>); }
     bool isCompound() const override { return true; }

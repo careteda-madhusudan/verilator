@@ -10,6 +10,14 @@
 `define checks(gotv,expv) do if ((gotv) != (expv)) begin $write("%%Error: %s:%0d:  got='%s' exp='%s'\n", `__FILE__,`__LINE__, (gotv), (expv)); `stop; end while(0);
 // verilog_format: on
 
+class wildcard_array_class;
+  logic [31:0] s_array[*];
+
+  function void array_filled(logic [31:0] s_array_1[*]);
+    this.s_array = s_array_1;
+  endfunction
+endclass
+
 module t (
     input clk
 );
@@ -88,6 +96,14 @@ module t (
       p = '{};
       i = p.size();
       `checkh(i, 0);
+    end
+    begin
+      // Whole wildcard associative array assignment
+      automatic logic [31:0] source[*] = '{7: 32'h12345678};
+      automatic wildcard_array_class object = new;
+      object.array_filled(source);
+      `checkh(object.s_array[7], 32'h12345678);
+      `checkh(object.s_array == source, 1);
     end
 
     $write("*-* All Finished *-*\n");

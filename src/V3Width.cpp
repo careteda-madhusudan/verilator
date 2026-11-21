@@ -9619,9 +9619,11 @@ class WidthVisitor final : public VNVisitor {
         const bool rhsIsQueue = VN_IS(rhsp, QueueDType);
         const bool lhsIsAssocArray = VN_IS(lhsp, AssocArrayDType);
         const bool rhsIsAssocArray = VN_IS(rhsp, AssocArrayDType);
+        const bool lhsIsWildcardArray = VN_IS(lhsp, WildcardArrayDType);
+        const bool rhsIsWildcardArray = VN_IS(rhsp, WildcardArrayDType);
 
         if (lhsIsDynArray || rhsIsDynArray || lhsIsQueue || rhsIsQueue || lhsIsAssocArray
-            || rhsIsAssocArray) {
+            || rhsIsAssocArray || lhsIsWildcardArray || rhsIsWildcardArray) {
             if (const AstDynArrayDType* const lhsDynp = VN_CAST(lhsp, DynArrayDType)) {
                 if (const AstDynArrayDType* const rhsDynp = VN_CAST(rhsp, DynArrayDType)) {
                     return isEquivalentDType(lhsDynp->subDTypep(), rhsDynp->subDTypep());
@@ -9638,6 +9640,14 @@ class WidthVisitor final : public VNVisitor {
                 if (const AstAssocArrayDType* const rhsAssocp = VN_CAST(rhsp, AssocArrayDType)) {
                     return isEquivalentDType(lhsAssocp->subDTypep(), rhsAssocp->subDTypep())
                            && isEquivalentDType(lhsAssocp->keyDTypep(), rhsAssocp->keyDTypep());
+                }
+            }
+
+            if (const AstWildcardArrayDType* const lhsWildcardp
+                = VN_CAST(lhsp, WildcardArrayDType)) {
+                if (const AstWildcardArrayDType* const rhsWildcardp
+                    = VN_CAST(rhsp, WildcardArrayDType)) {
+                    return isEquivalentDType(lhsWildcardp->subDTypep(), rhsWildcardp->subDTypep());
                 }
             }
 
@@ -10556,7 +10566,11 @@ class WidthVisitor final : public VNVisitor {
         const AstNodeDType* rhsDtpIterp = rhsDtp;
         for (uint32_t dim = 0; dim < rhsDim.second; dim++) {
             // Associative arrays are compatible only with each other
-            if (VN_IS(lhsDtpIterp, AssocArrayDType) ^ VN_IS(rhsDtpIterp, AssocArrayDType)) {
+            const bool lhsIsAssoc
+                = VN_IS(lhsDtpIterp, AssocArrayDType) || VN_IS(lhsDtpIterp, WildcardArrayDType);
+            const bool rhsIsAssoc
+                = VN_IS(rhsDtpIterp, AssocArrayDType) || VN_IS(rhsDtpIterp, WildcardArrayDType);
+            if (lhsIsAssoc != rhsIsAssoc) {
                 nodep->v3error("Illegal assignment: Associative arrays are assignment compatible "
                                "only with associative arrays (IEEE 1800-2023 7.6)"
                                << warnDTypes(nodep, lhsDtp, rhsDtp, lhsName, rhsName));

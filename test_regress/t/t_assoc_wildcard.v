@@ -22,6 +22,11 @@ module t (
     input clk
 );
 
+  typedef logic [31:0] wildcard_a_t [*];
+  typedef logic [31:0] wildcard_b_t [*];
+  wildcard_a_t compare_a;
+  wildcard_b_t compare_b;
+
   integer cyc = 0;
 
   integer i;
@@ -104,6 +109,11 @@ module t (
       object.array_filled(source);
       `checkh(object.s_array[7], 32'h12345678);
       `checkh(object.s_array == source, 1);
+
+      // Compare separately declared wildcard array types.
+      compare_a = '{7: 32'h12345678};
+      compare_b = '{7: 32'h12345678};
+      `checkh(compare_a == compare_b, 1);
     end
 
     $write("*-* All Finished *-*\n");
